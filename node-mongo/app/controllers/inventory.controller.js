@@ -70,29 +70,31 @@ exports.deleteInventory = (req, res) => {
 }
 
 exports.updateInventory = (req, res) => {
-    Inventory.findOneAndUpdate(
-        req.body._id,
-        {
-            prodname: req.body.prodname,
-            qty: req.body.qty,
-            price: req.body.price,
-            status: req.body.status
-        },
-        {new: false}
-    ).select('-__v')
-    .then(inventory =>{
-        if (!inventory) {
-            return res.status(404).send({
-                message: "Error -> Can`t update an inventory with id = " + req.params.id,
-                error: "Not Found"
-            })
-        }
-        res.status(200).json(inventory);
-    }).catch( err => {
-        return res.status(200).send({
-            message: "Error -> Can`t update a inventory with id = " + req.params.id,
-            error: err.message
-        })
+  Inventory.findByIdAndUpdate(
+    req.params.id, // ✅ use the id from URL
+    {
+      prodname: req.body.prodname,
+      qty: req.body.qty,
+      price: req.body.price,
+      status: req.body.status
+    },
+    { new: true, runValidators: true } // ✅ return updated doc
+  )
+    .select('-__v')
+    .then(inventory => {
+      if (!inventory) {
+        return res.status(404).send({
+          message: "Error -> Can't update an inventory with id = " + req.params.id,
+          error: "Not Found"
+        });
+      }
+      res.status(200).json(inventory);
     })
-}
+    .catch(err => {
+      return res.status(500).send({
+        message: "Error -> Can't update an inventory with id = " + req.params.id,
+        error: err.message
+      });
+    });
+};
 
